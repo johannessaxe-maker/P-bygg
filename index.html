@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inngangsparti AI</title>
+  <title>P-bygg AI</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="topbar">
     <div>
-      <h1>Inngangsparti AI</h1>
-      <p>Personlig MVP for å visualisere et enkelt inngangsparti på eksisterende husfoto.</p>
+      <h1>P-bygg AI</h1>
+      <p>Først låses en enkel skisse av eksisterende hus. Deretter jobber du med inngangspartiet som separat påbygg.</p>
     </div>
     <div class="badge">Konsept • ikke byggesøknad</div>
   </header>
@@ -33,15 +33,26 @@
       <p id="healthStatus" class="status"></p>
     </section>
 
+    <section class="panel flow-panel full-width">
+      <h2>Arbeidsflyt</h2>
+      <div class="steps">
+        <div class="step active" id="stepBase">1. Forstå eksisterende hus</div>
+        <div class="step" id="stepLock">2. Lås base-skisse</div>
+        <div class="step" id="stepExtension">3. Lag inngangsparti</div>
+        <div class="step" id="stepBrief">4. Eksporter brief</div>
+      </div>
+      <p class="hint">Poenget er å unngå at AI-en designer påbygg før den har forstått huset. Base-house JSON og påbygg-JSON holdes separat.</p>
+    </section>
+
     <section class="panel input-panel">
-      <h2>2. Startprosjekt</h2>
+      <h2>2. Eksisterende hus</h2>
       <label>
-        Foto av huset / inngangspartiet
+        Originalfoto av huset / området ved inngang
         <input id="photoInput" type="file" accept="image/*" />
       </label>
       <label>
-        Kort ønske
-        <textarea id="wishesInput" rows="4" placeholder="F.eks. lite vindfang rundt eksisterende inngangsdør, saltak, ca. 2,4 m bredt og 1,6 m dypt, materialer som matcher huset. Fjern vinduet til høyre hvis nødvendig."></textarea>
+        Notat om huset / hva appen bør forstå
+        <textarea id="baseContextInput" rows="4" placeholder="F.eks. dette er nordfasaden. Døren midt på bildet er inngangsdøren. Vinduet til høyre skal kanskje fjernes senere. Fjern busker fra skissen."></textarea>
       </label>
       <div class="grid2">
         <label>
@@ -54,10 +65,13 @@
         </label>
       </div>
       <label class="checkbox">
-        <input id="startGenerateImage" type="checkbox" checked />
-        Generer bildeforslag samtidig
+        <input id="baseGenerateSketch" type="checkbox" checked />
+        Lag base-skisse samtidig
       </label>
-      <button id="startBtn" class="primary">Lag første JSON + bilde</button>
+      <div class="row">
+        <button id="baseStartBtn" class="primary">Lag base-JSON + skisse</button>
+        <button id="showBaseBtn" class="secondary">Vis base-skisse</button>
+      </div>
     </section>
 
     <section class="panel image-panel">
@@ -68,9 +82,9 @@
           <button id="downloadImageBtn" class="ghost">Last ned bilde</button>
         </div>
       </div>
-      <p class="hint">Tegn rødt kryss/markering på bildet for ting som skal fjernes eller området som skal endres. Dette sendes som eget markeringsbilde.</p>
+      <p id="imageHint" class="hint">Her vises først base-skissen. Tegn rødt på bildet for å korrigere base-skisse eller revidere påbygg, avhengig av hvilken knapp du bruker.</p>
       <div class="canvas-wrap" id="canvasWrap">
-        <img id="displayImage" alt="Opplastet eller generert bilde" />
+        <img id="displayImage" alt="Opplastet, skisse eller generert bilde" />
         <canvas id="markupCanvas"></canvas>
       </div>
       <div class="row compact">
@@ -86,40 +100,83 @@
 
     <section class="panel json-panel">
       <div class="section-head">
-        <h2>4. Prosjekt-JSON</h2>
+        <h2>4. Base-house JSON</h2>
         <div class="row compact">
-          <button id="formatJsonBtn" class="ghost">Formater</button>
-          <button id="downloadJsonBtn" class="ghost">Last ned JSON</button>
-          <label class="file-button">
-            Last opp JSON
-            <input id="jsonUpload" type="file" accept="application/json,.json" />
-          </label>
+          <button id="formatBaseJsonBtn" class="ghost">Formater</button>
+          <button id="downloadBaseJsonBtn" class="ghost">Last ned</button>
         </div>
       </div>
-      <textarea id="jsonEditor" spellcheck="false" placeholder="Prosjekt-JSON vises her etter første kjøring."></textarea>
-    </section>
-
-    <section class="panel revise-panel">
-      <h2>5. Revider</h2>
+      <div class="lock-row">
+        <span id="baseLockStatus" class="lock-badge unlocked">Ikke låst</span>
+        <button id="toggleBaseLockBtn" class="secondary">Lås base</button>
+      </div>
+      <textarea id="baseJsonEditor" spellcheck="false" placeholder="Base-house JSON vises her etter første kjøring."></textarea>
       <label>
-        Endringsønske
-        <textarea id="revisionInput" rows="4" placeholder="F.eks. gjør tilbygget 50 cm bredere, bruk pulttak i stedet, fjern vinduet jeg har krysset ut, behold resten av fasaden uendret."></textarea>
+        Korriger eksisterende hus
+        <textarea id="baseRevisionInput" rows="3" placeholder="F.eks. dette er pulttak, ikke saltak. V01 er egentlig en dør. Ignorer busken foran fasaden."></textarea>
       </label>
       <label class="checkbox">
-        <input id="reviseGenerateImage" type="checkbox" checked />
-        Generer nytt bilde etter revisjon
+        <input id="baseReviseGenerateSketch" type="checkbox" checked />
+        Lag ny base-skisse etter korreksjon
+      </label>
+      <button id="baseReviseBtn" class="primary">Oppdater base-JSON + skisse</button>
+    </section>
+
+    <section class="panel extension-panel">
+      <h2>5. Inngangsparti / påbygg</h2>
+      <p class="hint">Denne delen blir aktiv når base-house JSON er låst. Påbygget får egen JSON slik at eksisterende hus og nytt tiltak ikke blandes.</p>
+      <label>
+        Ønske for inngangsparti
+        <textarea id="extensionInput" rows="4" placeholder="F.eks. enkelt overbygd inngangsparti, ca. 2,4 m bredt og 1,6 m dypt, pulttak, samme kledning som huset. Bygg inn/fjern vinduet til høyre hvis nødvendig."></textarea>
+      </label>
+      <label class="checkbox">
+        <input id="extensionGenerateImage" type="checkbox" checked />
+        Generer bilde samtidig
       </label>
       <div class="row">
-        <button id="reviseBtn" class="primary">Oppdater JSON + generer ny versjon</button>
-        <button id="briefBtn" class="secondary">Lag arkitektbrief</button>
+        <button id="extensionStartBtn" class="primary">Lag påbygg-JSON + bilde</button>
+        <button id="showExtensionBtn" class="secondary">Vis påbygg-bilde</button>
       </div>
+      <label>
+        Revider påbygg
+        <textarea id="extensionRevisionInput" rows="3" placeholder="F.eks. gjør tilbygget 50 cm bredere, bytt til saltak, fjern vinduet jeg har krysset ut, behold resten av huset uendret."></textarea>
+      </label>
+      <label class="checkbox">
+        <input id="extensionReviseGenerateImage" type="checkbox" checked />
+        Generer nytt bilde etter revisjon
+      </label>
+      <button id="extensionReviseBtn" class="primary">Oppdater påbygg-JSON + bilde</button>
+    </section>
+
+    <section class="panel json-panel">
+      <div class="section-head">
+        <h2>6. Påbygg-JSON</h2>
+        <div class="row compact">
+          <button id="formatExtensionJsonBtn" class="ghost">Formater</button>
+          <button id="downloadExtensionJsonBtn" class="ghost">Last ned</button>
+        </div>
+      </div>
+      <textarea id="extensionJsonEditor" spellcheck="false" placeholder="Påbygg-JSON vises her etter at base er låst og påbygg er startet."></textarea>
+    </section>
+
+    <section class="panel project-panel">
+      <h2>7. Prosjektfil</h2>
+      <div class="row">
+        <button id="downloadProjectBtn" class="secondary">Last ned samlet prosjekt</button>
+        <label class="file-button">
+          Last opp prosjekt
+          <input id="projectUpload" type="file" accept="application/json,.json" />
+        </label>
+      </div>
+      <p class="hint">Samlet prosjektfil inneholder base-house JSON, påbygg-JSON og eventuelle bilde-data-URLer. Ingen database trengs.</p>
     </section>
 
     <section class="panel brief-panel">
       <div class="section-head">
-        <h2>6. Arkitektbrief</h2>
+        <h2>8. Arkitektbrief</h2>
         <button id="downloadBriefBtn" class="ghost">Last ned brief</button>
       </div>
+      <button id="briefBtn" class="primary">Lag arkitektbrief</button>
       <pre id="briefOutput">Ingen brief ennå.</pre>
     </section>
   </main>
