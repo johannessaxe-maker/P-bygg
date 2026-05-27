@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inngangsparti AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Inngangsparti AI</h1>
+      <p>Personlig MVP for å visualisere et enkelt inngangsparti på eksisterende husfoto.</p>
+    </div>
+    <div class="badge">Konsept • ikke byggesøknad</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel settings-panel">
+      <h2>1. Tilkobling</h2>
+      <label>
+        Backend-URL
+        <input id="backendUrl" type="url" placeholder="https://din-cloudrun-url.run.app" />
+      </label>
+      <label>
+        App-passord
+        <input id="appPassword" type="password" placeholder="Skrives inn ved bruk – lagres kun i denne fanen" />
+      </label>
+      <div class="row">
+        <button id="saveSettingsBtn" class="secondary">Lagre innstillinger</button>
+        <button id="healthBtn" class="ghost">Test backend</button>
+      </div>
+      <p id="healthStatus" class="status"></p>
+    </section>
+
+    <section class="panel input-panel">
+      <h2>2. Startprosjekt</h2>
+      <label>
+        Foto av huset / inngangspartiet
+        <input id="photoInput" type="file" accept="image/*" />
+      </label>
+      <label>
+        Kort ønske
+        <textarea id="wishesInput" rows="4" placeholder="F.eks. lite vindfang rundt eksisterende inngangsdør, saltak, ca. 2,4 m bredt og 1,6 m dypt, materialer som matcher huset. Fjern vinduet til høyre hvis nødvendig."></textarea>
+      </label>
+      <div class="grid2">
+        <label>
+          Målereferanse
+          <input id="scaleNoteInput" placeholder="F.eks. meterstokk på vegg / dør er 90 cm" />
+        </label>
+        <label>
+          Lengde i meter
+          <input id="referenceLengthInput" type="number" step="0.01" placeholder="1.0" />
+        </label>
+      </div>
+      <label class="checkbox">
+        <input id="startGenerateImage" type="checkbox" checked />
+        Generer bildeforslag samtidig
+      </label>
+      <button id="startBtn" class="primary">Lag første JSON + bilde</button>
+    </section>
+
+    <section class="panel image-panel">
+      <div class="section-head">
+        <h2>3. Bilde og markeringer</h2>
+        <div class="row compact">
+          <button id="clearMarkupBtn" class="ghost">Tøm markering</button>
+          <button id="downloadImageBtn" class="ghost">Last ned bilde</button>
+        </div>
+      </div>
+      <p class="hint">Tegn rødt kryss/markering på bildet for ting som skal fjernes eller området som skal endres. Dette sendes som eget markeringsbilde.</p>
+      <div class="canvas-wrap" id="canvasWrap">
+        <img id="displayImage" alt="Opplastet eller generert bilde" />
+        <canvas id="markupCanvas"></canvas>
+      </div>
+      <div class="row compact">
+        <label class="checkbox">
+          <input id="drawMode" type="checkbox" checked /> Tegn markering
+        </label>
+        <label class="small-label">
+          Pensel
+          <input id="brushSize" type="range" min="4" max="40" value="14" />
+        </label>
+      </div>
+    </section>
+
+    <section class="panel json-panel">
+      <div class="section-head">
+        <h2>4. Prosjekt-JSON</h2>
+        <div class="row compact">
+          <button id="formatJsonBtn" class="ghost">Formater</button>
+          <button id="downloadJsonBtn" class="ghost">Last ned JSON</button>
+          <label class="file-button">
+            Last opp JSON
+            <input id="jsonUpload" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+      </div>
+      <textarea id="jsonEditor" spellcheck="false" placeholder="Prosjekt-JSON vises her etter første kjøring."></textarea>
+    </section>
+
+    <section class="panel revise-panel">
+      <h2>5. Revider</h2>
+      <label>
+        Endringsønske
+        <textarea id="revisionInput" rows="4" placeholder="F.eks. gjør tilbygget 50 cm bredere, bruk pulttak i stedet, fjern vinduet jeg har krysset ut, behold resten av fasaden uendret."></textarea>
+      </label>
+      <label class="checkbox">
+        <input id="reviseGenerateImage" type="checkbox" checked />
+        Generer nytt bilde etter revisjon
+      </label>
+      <div class="row">
+        <button id="reviseBtn" class="primary">Oppdater JSON + generer ny versjon</button>
+        <button id="briefBtn" class="secondary">Lag arkitektbrief</button>
+      </div>
+    </section>
+
+    <section class="panel brief-panel">
+      <div class="section-head">
+        <h2>6. Arkitektbrief</h2>
+        <button id="downloadBriefBtn" class="ghost">Last ned brief</button>
+      </div>
+      <pre id="briefOutput">Ingen brief ennå.</pre>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
