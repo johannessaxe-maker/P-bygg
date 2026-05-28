@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>P-bygg AI v0.6</title>
+  <title>P-bygg AI v0.6.1</title>
   <style>
     :root{
       --bg:#f4f1ec; --panel:#fffaf2; --panel2:#ffffff; --ink:#1f2933; --muted:#667085; --line:#ded6c8;
@@ -46,8 +46,8 @@
 </head>
 <body>
 <header>
-  <h1>P-bygg AI v0.6</h1>
-  <p class="sub">JSON-first: AI hjelper med å lage eller oppdatere JSON, men når du trykker render brukes JSON-en direkte som sannhet. Du kan også velge hvilket bilde som skal sendes med som visuelt anker.</p>
+  <h1>P-bygg AI v0.6.1</h1>
+  <p class="sub">JSON-first: AI hjelper med å lage eller oppdatere JSON, men når du trykker render brukes JSON-en direkte som sannhet. JSON-formatknappene forsøker nå også å reparere vanlige lim-inn-feil. Du kan også velge hvilket bilde som skal sendes med som visuelt anker.</p>
   <div class="steps">
     <span class="step active">1 Base-scene</span>
     <span class="step">2 Base-skisse</span>
@@ -201,7 +201,260 @@ async function apiPost(path, formData){
   if(!res.ok){ const detail = data.detail || text || `HTTP ${res.status}`; throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail, null, 2)); }
   return data;
 }
-function parseJsonTextarea(id){ try { return JSON.parse($(id).value); } catch(e) { throw new Error(`Ugyldig JSON i ${id}: ${e.message}`); } }
+function stripJsonCodeFence(text){
+  let t = String(text || "").trim();
+
+  // Remove Markdown fences if the user pasted ```json ... ```
+  t = t.replace(/^```(?:json|JSON)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+  return t;
+}
+
+function extractLikelyJson(text){
+  const t = stripJsonCodeFence(text);
+  const firstObj = t.indexOf("{");
+  const firstArr = t.indexOf("[");
+  let start = -1;
+
+  if(firstObj === -1) start = firstArr;
+  else if(firstArr === -1) start = firstObj;
+  else start = Math.min(firstObj, firstArr);
+
+  if(start === -1) return t;
+
+  const open = t[start];
+  const close = open === "{" ? "}" : "]";
+  const end = t.lastIndexOf(close);
+
+  if(end === -1 || end <= start) return t.slice(start).trim();
+  return t.slice(start, end + 1).trim();
+}
+
+function removeJsonComments(text){
+  let out = "";
+  let inString = false;
+  let quote = "";
+  let escaped = false;
+
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    const n = text[i + 1];
+
+    if(inString){
+      out += c;
+      if(escaped){
+        escaped = false;
+      } else if(c === "\\"){
+        escaped = true;
+      } else if(c === quote){
+        inString = false;
+        quote = "";
+      }
+      continue;
+    }
+
+    if(c === '"' || c === "'"){
+      inString = true;
+      quote = c;
+      out += c;
+      continue;
+    }
+
+    // Line comments
+    if(c === "/" && n === "/"){
+      while(i < text.length && text[i] !== "\n") i++;
+      out += "\n";
+      continue;
+    }
+
+    // Block comments
+    if(c === "/" && n === "*"){
+      i += 2;
+      while(i < text.length && !(text[i] === "*" && text[i + 1] === "/")) i++;
+      i++;
+      continue;
+    }
+
+    out += c;
+  }
+
+  return out;
+}
+
+function replaceSmartQuotes(text){
+  return String(text || "")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/[‘’‚‛]/g, "'");
+}
+
+function convertSingleQuotedStrings(text){
+  // Converts simple JSON-like single-quoted strings to double-quoted strings.
+  // It avoids trying to be a full parser, but handles common pasted JSON/Python dict cases.
+  let out = "";
+  let inSingle = false;
+  let inDouble = false;
+  let escaped = false;
+  let buffer = "";
+
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+
+    if(inDouble){
+      out += c;
+      if(escaped) escaped = false;
+      else if(c === "\\") escaped = true;
+      else if(c === '"') inDouble = false;
+      continue;
+    }
+
+    if(inSingle){
+      if(escaped){
+        buffer += c;
+        escaped = false;
+      } else if(c === "\\"){
+        escaped = true;
+      } else if(c === "'"){
+        out += '"' + buffer.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+        buffer = "";
+        inSingle = false;
+      } else {
+        buffer += c;
+      }
+      continue;
+    }
+
+    if(c === '"'){
+      inDouble = true;
+      out += c;
+      continue;
+    }
+
+    if(c === "'"){
+      inSingle = true;
+      buffer = "";
+      continue;
+    }
+
+    out += c;
+  }
+
+  // If user has an unclosed single quote, preserve as best as possible.
+  if(inSingle){
+    out += '"' + buffer.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+  }
+
+  return out;
+}
+
+function quoteUnquotedKeys(text){
+  // Handles common cases like { locked: true, base_scene: {...} }
+  // Only applies after { or , followed by a key-like token and colon.
+  return text.replace(/([{,]\s*)([A-Za-z_ÆØÅæøå][A-Za-z0-9_ÆØÅæøå-]*)(\s*:)/g, '$1"$2"$3');
+}
+
+function normalizePythonJsonValues(text){
+  return text
+    .replace(/:\s*None(\s*[,}\]])/g, ": null$1")
+    .replace(/:\s*True(\s*[,}\]])/g, ": true$1")
+    .replace(/:\s*False(\s*[,}\]])/g, ": false$1")
+    .replace(/\bNone\b/g, "null")
+    .replace(/\bTrue\b/g, "true")
+    .replace(/\bFalse\b/g, "false");
+}
+
+function removeTrailingCommas(text){
+  let out = "";
+  let inString = false;
+  let quote = "";
+  let escaped = false;
+
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+
+    if(inString){
+      out += c;
+      if(escaped) escaped = false;
+      else if(c === "\\") escaped = true;
+      else if(c === quote) inString = false;
+      continue;
+    }
+
+    if(c === '"' || c === "'"){
+      inString = true;
+      quote = c;
+      out += c;
+      continue;
+    }
+
+    if(c === ","){
+      let j = i + 1;
+      while(j < text.length && /\s/.test(text[j])) j++;
+      if(text[j] === "}" || text[j] === "]"){
+        continue;
+      }
+    }
+
+    out += c;
+  }
+
+  return out;
+}
+
+function repairJsonText(text){
+  let t = String(text || "");
+  t = stripJsonCodeFence(t);
+  t = extractLikelyJson(t);
+  t = replaceSmartQuotes(t);
+  t = removeJsonComments(t);
+  t = convertSingleQuotedStrings(t);
+  t = quoteUnquotedKeys(t);
+  t = normalizePythonJsonValues(t);
+  t = removeTrailingCommas(t);
+  return t.trim();
+}
+
+function parseJsonWithRepair(text, {repair = false} = {}){
+  const raw = String(text || "").trim();
+  try {
+    return { obj: JSON.parse(raw), repairedText: raw, repaired: false };
+  } catch(firstError) {
+    if(!repair) throw firstError;
+
+    const repairedText = repairJsonText(raw);
+    try {
+      return { obj: JSON.parse(repairedText), repairedText, repaired: repairedText !== raw };
+    } catch(secondError) {
+      const err = new Error(
+        "Kunne ikke tolke JSON.\n\n" +
+        "Original feil: " + firstError.message + "\n" +
+        "Etter reparasjonsforsøk: " + secondError.message
+      );
+      err.originalError = firstError;
+      err.repairedError = secondError;
+      err.repairedText = repairedText;
+      throw err;
+    }
+  }
+}
+
+function parseJsonTextarea(id, opts = {}){
+  try {
+    return parseJsonWithRepair($(id).value, opts).obj;
+  } catch(e) {
+    throw new Error(`Ugyldig JSON i ${id}: ${e.message}`);
+  }
+}
+
+function smartFormatJsonTextarea(id, label){
+  const result = parseJsonWithRepair($(id).value, {repair: true});
+  $(id).value = JSON.stringify(result.obj, null, 2);
+  const suffix = result.repaired
+    ? " Vanlige feil ble forsøkt reparert før formatering."
+    : "";
+  setMessage(`${label} er gyldig og formatert.${suffix}`);
+  return result.obj;
+}
+
 function writeJson(id, obj){ $(id).value = JSON.stringify(obj, null, 2); }
 function setImage(boxId, dataUrl, placeholder){ const box=$(boxId); box.innerHTML = dataUrl ? `<img src="${dataUrl}" alt="">` : `<div class="placeholder">${escapeHtml(placeholder)}</div>`; }
 function dataUrlToFile(dataUrl, filename){ if(!dataUrl) return null; const arr=dataUrl.split(","); const mime=(arr[0].match(/:(.*?);/)||[])[1]||"image/png"; const bstr=atob(arr[1]); const u8=new Uint8Array(bstr.length); for(let i=0;i<bstr.length;i++) u8[i]=bstr.charCodeAt(i); return new File([u8], filename, {type:mime}); }
@@ -266,7 +519,7 @@ $("baseRenderBtn").addEventListener("click", async()=>{
 
 $("lockBaseBtn").addEventListener("click",()=>{ try { const base=parseJsonTextarea("baseSceneJson"); base.locked=true; base.lock_state=base.lock_state||{}; base.lock_state.overall_locked=true; base.lock_state.locked_aspects=base.lock_state.locked_aspects||[]; for(const item of ["house_overview","element_list","base_sketch_instruction"]){ if(!base.lock_state.locked_aspects.includes(item)) base.lock_state.locked_aspects.push(item); } base.iteration=base.iteration||{}; base.iteration.change_log=base.iteration.change_log||[]; base.iteration.change_log.push({action:"locked_base_scene", note:"Bruker låste base-scene som utgangspunkt for påbygg.", timestamp:new Date().toISOString()}); state.baseScene=base; writeJson("baseSceneJson", base); updateLockPill(); setMessage("Base er låst. Du kan nå lage separat påbygg."); } catch(e){ setMessage(e.message,"error"); } });
 $("unlockBaseBtn").addEventListener("click",()=>{ try { const base=parseJsonTextarea("baseSceneJson"); base.locked=false; base.lock_state=base.lock_state||{}; base.lock_state.overall_locked=false; state.baseScene=base; writeJson("baseSceneJson", base); updateLockPill(); setMessage("Base er låst opp."); } catch(e){ setMessage(e.message,"error"); } });
-$("formatBaseJsonBtn").addEventListener("click",()=>{ try { const obj=parseJsonTextarea("baseSceneJson"); writeJson("baseSceneJson", obj); updateLockPill(); setMessage("Base-scene JSON er formatert."); } catch(e){ setMessage(e.message,"error"); } });
+$("formatBaseJsonBtn").addEventListener("click",()=>{ try { smartFormatJsonTextarea("baseSceneJson", "Base-scene JSON"); updateLockPill(); } catch(e){ setMessage(e.message,"error"); } });
 
 $("extensionStartBtn").addEventListener("click", async()=>{
   await withBusy($("extensionStartBtn"), async()=>{
@@ -328,7 +581,7 @@ $("extensionRenderBtn").addEventListener("click", async()=>{
   });
 });
 
-$("formatExtensionJsonBtn").addEventListener("click",()=>{ try { const obj=parseJsonTextarea("extensionJson"); writeJson("extensionJson", obj); setMessage("Påbygg JSON er formatert."); } catch(e){ setMessage(e.message,"error"); } });
+$("formatExtensionJsonBtn").addEventListener("click",()=>{ try { smartFormatJsonTextarea("extensionJson", "Påbygg JSON"); } catch(e){ setMessage(e.message,"error"); } });
 $("briefBtn").addEventListener("click", async()=>{ await withBusy($("briefBtn"), async()=>{ const base=parseJsonTextarea("baseSceneJson"); const fd=new FormData(); fd.append("base_scene_json", JSON.stringify(base)); if($("extensionJson").value.trim()){ const extension=parseJsonTextarea("extensionJson"); fd.append("extension_json", JSON.stringify(extension)); } const data=await apiPost("/api/brief", fd); $("briefOutput").value=data.brief_markdown||""; setMessage("Arkitektbrief er laget."); }); });
 $("downloadProjectBtn").addEventListener("click",()=>{ const project={ file_type:"pabygg_project", version:"0.6", saved_at:new Date().toISOString(), base_scene: $("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null, extension: $("extensionJson").value.trim()?JSON.parse($("extensionJson").value):null, images:{ base_sketch_data_url: state.baseSketchDataUrl, extension_image_data_url: state.extensionImageDataUrl } }; const blob=new Blob([JSON.stringify(project,null,2)], {type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="pabygg-project.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); });
 $("loadProjectBtn").addEventListener("click",()=>$("loadProjectInput").click());
