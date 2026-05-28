@@ -3,361 +3,183 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>P-bygg AI v0.5</title>
+  <title>P-bygg AI v0.6</title>
   <style>
     :root{
-      --bg:#f4f1ec;
-      --panel:#fffaf2;
-      --panel2:#ffffff;
-      --ink:#1f2933;
-      --muted:#667085;
-      --line:#ded6c8;
-      --accent:#355c4a;
-      --accent2:#7b4e2d;
-      --danger:#a43f3f;
-      --ok:#256d46;
-      --shadow: 0 12px 30px rgba(33, 25, 16, .08);
-      --radius: 18px;
+      --bg:#f4f1ec; --panel:#fffaf2; --panel2:#ffffff; --ink:#1f2933; --muted:#667085; --line:#ded6c8;
+      --accent:#355c4a; --accent2:#7b4e2d; --danger:#a43f3f; --ok:#256d46; --shadow: 0 12px 30px rgba(33,25,16,.08); --radius:18px;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color:var(--ink);
-      background:linear-gradient(180deg,#f6f2eb,#ece5da);
-    }
-    header{
-      padding:28px clamp(16px,4vw,44px) 14px;
-    }
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#f6f2eb,#ece5da)}
+    header{padding:28px clamp(16px,4vw,44px) 14px}
     h1{margin:0 0 8px;font-size:clamp(28px,4vw,44px);letter-spacing:-.04em}
     h2{margin:0 0 12px;font-size:22px;letter-spacing:-.02em}
     h3{margin:18px 0 8px;font-size:16px}
-    p{line-height:1.55}
-    .sub{color:var(--muted);max-width:900px;margin:0}
-    main{
-      padding:16px clamp(16px,4vw,44px) 44px;
-      display:grid;
-      gap:18px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap:18px;
-    }
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-    }
-    .card{
-      background:rgba(255,250,242,.92);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:18px;
-      box-shadow:var(--shadow);
-    }
+    p{line-height:1.55}.sub{color:var(--muted);max-width:950px;margin:0}
+    main{padding:16px clamp(16px,4vw,44px) 44px;display:grid;gap:18px}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(255,250,242,.92);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     .card.white{background:var(--panel2)}
-    label{
-      display:block;
-      font-weight:700;
-      font-size:13px;
-      margin:12px 0 6px;
-    }
-    input, textarea, select{
-      width:100%;
-      border:1px solid #cfc7b9;
-      border-radius:12px;
-      padding:11px 12px;
-      font:inherit;
-      background:#fff;
-      color:var(--ink);
-    }
-    textarea{
-      min-height:260px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size:12px;
-      line-height:1.45;
-      resize:vertical;
-      white-space:pre;
-    }
-    .briefbox{
-      min-height:240px;
-      white-space:pre-wrap;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-    }
-    .row{
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:10px;
-      margin-top:12px;
-    }
-    button{
-      border:0;
-      border-radius:14px;
-      padding:11px 14px;
-      font:inherit;
-      font-weight:800;
-      cursor:pointer;
-      background:var(--accent);
-      color:#fff;
-      box-shadow:0 8px 16px rgba(53,92,74,.16);
-    }
-    button.secondary{background:#5e6a75}
-    button.brown{background:var(--accent2)}
-    button.danger{background:var(--danger)}
-    button.ok{background:var(--ok)}
-    button:disabled{
-      opacity:.5;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--muted);
-      font-size:13px;
-      font-weight:700;
-    }
-    .pill.ok{color:var(--ok)}
-    .pill.warn{color:#9a6700}
-    .pill.bad{color:var(--danger)}
-    .imagebox{
-      min-height:260px;
-      background:#efe8dc;
-      border:1px dashed #c8bda9;
-      border-radius:16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      position:relative;
-    }
-    .imagebox img{
-      max-width:100%;
-      max-height:560px;
-      display:block;
-      object-fit:contain;
-    }
-    .placeholder{
-      color:#756b5e;
-      padding:28px;
-      text-align:center;
-    }
+    label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
+    input,textarea,select{width:100%;border:1px solid #cfc7b9;border-radius:12px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}
+    textarea{min-height:260px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical;white-space:pre}
+    .briefbox{min-height:240px;white-space:pre-wrap;font-family:ui-sans-serif,system-ui,sans-serif}
+    .row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+    button{border:0;border-radius:14px;padding:11px 14px;font:inherit;font-weight:800;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 8px 16px rgba(53,92,74,.16)}
+    button.secondary{background:#5e6a75} button.brown{background:var(--accent2)} button.danger{background:var(--danger)} button.ok{background:var(--ok)}
+    button:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+    .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;font-weight:700}
+    .pill.ok{color:var(--ok)} .pill.warn{color:#9a6700}
+    .imagebox{min-height:260px;background:#efe8dc;border:1px dashed #c8bda9;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .imagebox img{max-width:100%;max-height:560px;display:block;object-fit:contain}
+    .placeholder{color:#756b5e;padding:28px;text-align:center}
     .small{font-size:13px;color:var(--muted)}
-    .error{
-      background:#fff1f1;
-      color:#8a2323;
-      border:1px solid #efc7c7;
-      padding:12px;
-      border-radius:12px;
-      white-space:pre-wrap;
-    }
-    .success{
-      background:#effaf3;
-      color:#1c673a;
-      border:1px solid #bbe7c8;
-      padding:12px;
-      border-radius:12px;
-      white-space:pre-wrap;
-    }
-    .split{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 760px){
-      .split{grid-template-columns:1fr}
-    }
-    details{
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-      padding:10px 12px;
-      margin-top:12px;
-    }
-    summary{cursor:pointer;font-weight:800}
-    .steps{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-    .step{
-      padding:8px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:#fff;
-      color:var(--muted);
-      font-weight:800;
-      font-size:13px;
-    }
-    .step.active{
-      background:var(--accent);
-      color:white;
-      border-color:var(--accent);
-    }
+    .error{background:#fff1f1;color:#8a2323;border:1px solid #efc7c7;padding:12px;border-radius:12px;white-space:pre-wrap}
+    .success{background:#effaf3;color:#1c673a;border:1px solid #bbe7c8;padding:12px;border-radius:12px;white-space:pre-wrap}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width:760px){.split{grid-template-columns:1fr}}
+    .steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .step{padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-weight:800;font-size:13px}
+    .step.active{background:var(--accent);color:white;border-color:var(--accent)}
   </style>
 </head>
 <body>
-  <header>
-    <h1>P-bygg AI v0.5</h1>
-    <p class="sub">
-      Foto-basert arbeidsflyt: først forstå eksisterende hus med en detaljert scene-JSON og en forenklet AI-skisse,
-      deretter låser du basen og lager et separat inngangsparti/påbygg.
-    </p>
-    <div class="steps">
-      <span class="step active">1 Base-scene</span>
-      <span class="step">2 Base-skisse</span>
-      <span class="step">3 Lås base</span>
-      <span class="step">4 Påbygg</span>
-      <span class="step">5 Brief</span>
+<header>
+  <h1>P-bygg AI v0.6</h1>
+  <p class="sub">JSON-first: AI hjelper med å lage eller oppdatere JSON, men når du trykker render brukes JSON-en direkte som sannhet. Du kan også velge hvilket bilde som skal sendes med som visuelt anker.</p>
+  <div class="steps">
+    <span class="step active">1 Base-scene</span>
+    <span class="step">2 Base-skisse</span>
+    <span class="step">3 Lås base</span>
+    <span class="step">4 Påbygg-JSON</span>
+    <span class="step">5 Render fra JSON</span>
+  </div>
+</header>
+<main>
+  <section class="card">
+    <h2>Innstillinger</h2>
+    <div class="split">
+      <div>
+        <label for="backendUrl">Backend URL</label>
+        <input id="backendUrl" value="https://pabygg-backend-708343795123.europe-north1.run.app" />
+      </div>
+      <div>
+        <label for="appPassword">App-passord</label>
+        <input id="appPassword" type="password" autocomplete="current-password" placeholder="Skriv app-passord" />
+      </div>
     </div>
-  </header>
+    <div class="row">
+      <button class="secondary" id="saveSettingsBtn">Lagre backend-URL</button>
+      <button class="secondary" id="healthBtn">Test backend</button>
+      <span id="statusPill" class="pill">Ikke testet</span>
+    </div>
+    <div id="message"></div>
+  </section>
 
-  <main>
-    <section class="card">
-      <h2>Innstillinger</h2>
+  <section class="grid">
+    <div class="card white">
+      <h2>1. Originalfoto og base-scene</h2>
+      <label for="photoInput">Originalfoto</label>
+      <input id="photoInput" type="file" accept="image/*" />
+      <label for="baseWishes">Kort beskjed til base-tolkningen</label>
+      <textarea id="baseWishes" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal">Lag en ren base-skisse av eksisterende inngangsparti. Ta med dører, vinduer, platting/trapp/rekkverk og faste detaljer, men fjern løs visuell støy.</textarea>
       <div class="split">
         <div>
-          <label for="backendUrl">Backend URL</label>
-          <input id="backendUrl" value="https://pabygg-backend-708343795123.europe-north1.run.app" />
+          <label for="scaleNote">Målestokk / kjent referanse</label>
+          <input id="scaleNote" placeholder="f.eks. dørbredde 0,9 m eller meterstokk på vegg" />
         </div>
         <div>
-          <label for="appPassword">App-passord</label>
-          <input id="appPassword" type="password" autocomplete="current-password" placeholder="Skriv app-passord" />
+          <label for="referenceLength">Referanselengde i meter</label>
+          <input id="referenceLength" type="number" step="0.01" placeholder="f.eks. 0.9" />
         </div>
       </div>
       <div class="row">
-        <button class="secondary" id="saveSettingsBtn">Lagre backend-URL</button>
-        <button class="secondary" id="healthBtn">Test backend</button>
-        <span id="statusPill" class="pill">Ikke testet</span>
+        <button id="baseStartBtn">Lag base-scene med AI</button>
+        <button class="secondary" id="downloadProjectBtn">Last ned prosjektfil</button>
+        <button class="secondary" id="loadProjectBtn">Last opp prosjektfil</button>
+        <input id="loadProjectInput" type="file" accept="application/json" style="display:none" />
       </div>
-      <div id="message"></div>
-    </section>
+      <h3>Originalfoto</h3>
+      <div class="imagebox" id="originalBox"><div class="placeholder">Originalfoto vises her</div></div>
+    </div>
 
-    <section class="grid">
-      <div class="card white">
-        <h2>1. Originalfoto og base-scene</h2>
-        <label for="photoInput">Originalfoto</label>
-        <input id="photoInput" type="file" accept="image/*" />
-
-        <label for="baseWishes">Kort beskjed til base-tolkningen</label>
-        <textarea id="baseWishes" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal">Lag en ren base-skisse av eksisterende inngangsparti. Ta med dører, vinduer, platting/trapp/rekkverk og faste detaljer, men fjern løs visuell støy.</textarea>
-
-        <div class="split">
-          <div>
-            <label for="scaleNote">Målestokk / kjent referanse</label>
-            <input id="scaleNote" placeholder="f.eks. dørbredde 0,9 m eller meterstokk på vegg" />
-          </div>
-          <div>
-            <label for="referenceLength">Referanselengde i meter</label>
-            <input id="referenceLength" type="number" step="0.01" placeholder="f.eks. 0.9" />
-          </div>
-        </div>
-
-        <div class="row">
-          <button id="baseStartBtn">Lag base-scene og skisse</button>
-          <button class="secondary" id="downloadProjectBtn">Last ned prosjektfil</button>
-          <button class="secondary" id="loadProjectBtn">Last opp prosjektfil</button>
-          <input id="loadProjectInput" type="file" accept="application/json" style="display:none" />
-        </div>
-
-        <h3>Originalfoto</h3>
-        <div class="imagebox" id="originalBox">
-          <div class="placeholder">Originalfoto vises her</div>
-        </div>
-      </div>
-
-      <div class="card white">
-        <h2>2. AI-basert base-skisse</h2>
-        <p class="small">
-          Dette er ikke SVG og ikke teknisk tegning. Det er et ryddet bilde/skisse basert på originalfoto + base-scene JSON.
-        </p>
-        <div class="imagebox" id="baseSketchBox">
-          <div class="placeholder">Base-skisse vises her</div>
-        </div>
-
-        <label for="baseReviseInstruction">Korriger base-scene / base-skisse</label>
-        <textarea id="baseReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. taket er rødt, dette vinduet skal være større, plattingen skal med som eksisterende struktur, søppeldunkene skal fjernes fra skissen"></textarea>
-
-        <label for="baseMarkupInput">Valgfritt markert bilde / kryss</label>
-        <input id="baseMarkupInput" type="file" accept="image/*" />
-
-        <div class="row">
-          <button class="brown" id="baseReviseBtn">Oppdater base-skisse</button>
-          <button class="ok" id="lockBaseBtn">Lås base</button>
-          <span id="baseLockPill" class="pill warn">Base ikke låst</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="card">
-        <h2>Base-scene JSON</h2>
-        <p class="small">
-          Dette er den redigerbare beskrivelsen av originalbildet. Den bør inneholde dører, vinduer, access-strukturer og visuell støy.
-        </p>
-        <textarea id="baseSceneJson" spellcheck="false"></textarea>
-        <div class="row">
-          <button class="secondary" id="formatBaseJsonBtn">Formater JSON</button>
-          <button class="danger" id="unlockBaseBtn">Lås opp base</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>3. Separat påbygg</h2>
-        <label for="extensionWishes">Beskriv inngangspartiet/påbygget</label>
-        <textarea id="extensionWishes" style="min-height:120px;font-family:inherit;font-size:14px;white-space:normal">Lag et nøkternt overbygd inngangsparti som passer huset. Bruk eksisterende dør som hovedreferanse. Vurder å erstatte eller integrere eksisterende platting/trapp.</textarea>
-
-        <div class="row">
-          <button id="extensionStartBtn">Lag påbygg</button>
-        </div>
-
-        <label for="extensionReviseInstruction">Revider påbygg</label>
-        <textarea id="extensionReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. gjør det bredere, bytt til saltak, mer likt huset, fjern eksisterende rekkverk"></textarea>
-
-        <label for="extensionMarkupInput">Valgfritt markert bilde / kryss</label>
-        <input id="extensionMarkupInput" type="file" accept="image/*" />
-
-        <div class="row">
-          <button class="brown" id="extensionReviseBtn">Oppdater påbygg</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="card white">
-        <h2>Påbyggsvisualisering</h2>
-        <div class="imagebox" id="extensionImageBox">
-          <div class="placeholder">Påbyggsvisualisering vises her</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Påbygg JSON</h2>
-        <textarea id="extensionJson" spellcheck="false"></textarea>
-        <div class="row">
-          <button class="secondary" id="formatExtensionJsonBtn">Formater JSON</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>4. Arkitektbrief</h2>
+    <div class="card white">
+      <h2>2. Base-skisse</h2>
+      <p class="small">Lag først base-scene med AI. Deretter kan du redigere JSON-en og rendere ny base-skisse direkte fra JSON.</p>
+      <div class="imagebox" id="baseSketchBox"><div class="placeholder">Base-skisse vises her</div></div>
+      <label for="baseReviseInstruction">Oppdater base-scene med AI</label>
+      <textarea id="baseReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. taket er rødt, dette vinduet er større, plattingen skal regnes som eksisterende struktur"></textarea>
+      <label for="baseMarkupInput">Valgfritt markert bilde / kryss</label>
+      <input id="baseMarkupInput" type="file" accept="image/*" />
+      <label for="baseRenderSourceChoice">Kildebilde for base-render</label>
+      <select id="baseRenderSourceChoice">
+        <option value="original_photo">Originalbilde</option>
+        <option value="current_base_sketch">Base-skisse</option>
+      </select>
       <div class="row">
-        <button id="briefBtn">Lag arkitektbrief</button>
+        <button class="brown" id="baseReviseBtn">Oppdater base-scene med AI</button>
+        <button class="secondary" id="baseRenderBtn">Render base-skisse fra JSON</button>
+        <button class="ok" id="lockBaseBtn">Lås base</button>
+        <span id="baseLockPill" class="pill warn">Base ikke låst</span>
       </div>
-      <textarea id="briefOutput" class="briefbox" spellcheck="false"></textarea>
-    </section>
-  </main>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Base-scene JSON</h2>
+      <p class="small">Rediger JSON-en direkte hvis du vil. Når du trykker render, brukes denne JSON-en som sannhet.</p>
+      <textarea id="baseSceneJson" spellcheck="false"></textarea>
+      <div class="row">
+        <button class="secondary" id="formatBaseJsonBtn">Formater JSON</button>
+        <button class="danger" id="unlockBaseBtn">Lås opp base</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. Påbygg-JSON</h2>
+      <label for="extensionWishes">Lag første påbygg med AI</label>
+      <textarea id="extensionWishes" style="min-height:120px;font-family:inherit;font-size:14px;white-space:normal">Lag et nøkternt overbygd inngangsparti som passer huset. Bruk eksisterende dør som hovedreferanse. Vurder å erstatte eller integrere eksisterende platting/trapp.</textarea>
+      <div class="row"><button id="extensionStartBtn">Lag første påbygg-JSON med AI</button></div>
+      <label for="extensionReviseInstruction">Oppdater påbygg-JSON med AI</label>
+      <textarea id="extensionReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. gjør det bredere, trapp langs vegg, bytt til saltak"></textarea>
+      <label for="extensionMarkupInput">Valgfritt markert bilde / kryss</label>
+      <input id="extensionMarkupInput" type="file" accept="image/*" />
+      <label for="extensionRenderSourceChoice">Kildebilde for påbygg-render</label>
+      <select id="extensionRenderSourceChoice">
+        <option value="original_photo">Originalbilde</option>
+        <option value="base_sketch">Base-skisse</option>
+        <option value="current_visualization">Forrige påbygg-illustrasjon</option>
+      </select>
+      <div class="row">
+        <button class="brown" id="extensionReviseBtn">Oppdater påbygg-JSON med AI</button>
+        <button class="secondary" id="extensionRenderBtn">Render påbygg fra JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card white">
+      <h2>Påbyggsillustrasjon</h2>
+      <div class="imagebox" id="extensionImageBox"><div class="placeholder">Påbyggsillustrasjon vises her</div></div>
+    </div>
+    <div class="card">
+      <h2>Påbygg JSON</h2>
+      <textarea id="extensionJson" spellcheck="false"></textarea>
+      <div class="row"><button class="secondary" id="formatExtensionJsonBtn">Formater JSON</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4. Arkitektbrief</h2>
+    <div class="row"><button id="briefBtn">Lag arkitektbrief</button></div>
+    <textarea id="briefOutput" class="briefbox" spellcheck="false"></textarea>
+  </section>
+</main>
 
 <script>
 const $ = (id) => document.getElementById(id);
-
 let state = {
   originalPhotoFile: null,
   originalPhotoPreviewUrl: null,
@@ -367,342 +189,151 @@ let state = {
   extensionImageDataUrl: null
 };
 
-function setMessage(text, kind = "success") {
-  $("message").innerHTML = text ? `<div class="${kind}">${escapeHtml(text)}</div>` : "";
-}
-
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-}
-
-function backendUrl(){
-  return $("backendUrl").value.trim().replace(/\/+$/, "");
-}
-
-function appPassword(){
-  return $("appPassword").value;
-}
-
-function headers(){
-  return { "X-App-Password": appPassword() };
-}
-
+function setMessage(text, kind = "success") { $("message").innerHTML = text ? `<div class="${kind}">${escapeHtml(text)}</div>` : ""; }
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+function backendUrl(){ return $("backendUrl").value.trim().replace(/\/+$/, ""); }
+function appPassword(){ return $("appPassword").value; }
+function headers(){ return { "X-App-Password": appPassword() }; }
 async function apiPost(path, formData){
-  const res = await fetch(`${backendUrl()}${path}`, {
-    method: "POST",
-    headers: headers(),
-    body: formData
-  });
+  const res = await fetch(`${backendUrl()}${path}`, { method:"POST", headers:headers(), body:formData });
   const text = await res.text();
-  let data;
-  try { data = JSON.parse(text); } catch { data = { detail: text }; }
-  if(!res.ok){
-    const detail = data.detail || text || `HTTP ${res.status}`;
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail, null, 2));
-  }
+  let data; try { data = JSON.parse(text); } catch { data = { detail: text }; }
+  if(!res.ok){ const detail = data.detail || text || `HTTP ${res.status}`; throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail, null, 2)); }
   return data;
 }
+function parseJsonTextarea(id){ try { return JSON.parse($(id).value); } catch(e) { throw new Error(`Ugyldig JSON i ${id}: ${e.message}`); } }
+function writeJson(id, obj){ $(id).value = JSON.stringify(obj, null, 2); }
+function setImage(boxId, dataUrl, placeholder){ const box=$(boxId); box.innerHTML = dataUrl ? `<img src="${dataUrl}" alt="">` : `<div class="placeholder">${escapeHtml(placeholder)}</div>`; }
+function dataUrlToFile(dataUrl, filename){ if(!dataUrl) return null; const arr=dataUrl.split(","); const mime=(arr[0].match(/:(.*?);/)||[])[1]||"image/png"; const bstr=atob(arr[1]); const u8=new Uint8Array(bstr.length); for(let i=0;i<bstr.length;i++) u8[i]=bstr.charCodeAt(i); return new File([u8], filename, {type:mime}); }
+function updateLockPill(){ let locked=false; try { const base=$("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null; locked=!!base?.locked || !!base?.lock_state?.overall_locked; } catch{} const pill=$("baseLockPill"); if(locked){ pill.className="pill ok"; pill.textContent="Base låst"; } else { pill.className="pill warn"; pill.textContent="Base ikke låst"; } }
+function requireOriginalPhoto(){ if(!state.originalPhotoFile) throw new Error("Last opp originalfoto først."); }
+async function withBusy(btn, fn){ const old=btn.textContent; btn.disabled=true; btn.textContent="Jobber..."; setMessage(""); try { await fn(); } catch(e){ console.error(e); setMessage(e.message||String(e), "error"); } finally { btn.disabled=false; btn.textContent=old; } }
 
-function parseJsonTextarea(id){
-  try {
-    return JSON.parse($(id).value);
-  } catch(e) {
-    throw new Error(`Ugyldig JSON i ${id}: ${e.message}`);
-  }
-}
+$("saveSettingsBtn").addEventListener("click",()=>{ localStorage.setItem("pabygg_backend_url", backendUrl()); setMessage("Backend-URL lagret i nettleseren."); });
+$("healthBtn").addEventListener("click", async()=>{ await withBusy($("healthBtn"), async()=>{ const res=await fetch(`${backendUrl()}/health`); const data=await res.json(); $("statusPill").className="pill ok"; $("statusPill").textContent=`OK v${data.version||"?"}`; setMessage(JSON.stringify(data,null,2)); }); });
+$("photoInput").addEventListener("change",(e)=>{ const file=e.target.files[0]; state.originalPhotoFile=file||null; if(state.originalPhotoPreviewUrl) URL.revokeObjectURL(state.originalPhotoPreviewUrl); state.originalPhotoPreviewUrl=file?URL.createObjectURL(file):null; setImage("originalBox", state.originalPhotoPreviewUrl, "Originalfoto vises her"); });
 
-function writeJson(id, obj){
-  $(id).value = JSON.stringify(obj, null, 2);
-}
-
-function setImage(boxId, dataUrl, placeholder){
-  const box = $(boxId);
-  if(dataUrl){
-    box.innerHTML = `<img src="${dataUrl}" alt="">`;
-  } else {
-    box.innerHTML = `<div class="placeholder">${escapeHtml(placeholder)}</div>`;
-  }
-}
-
-function dataUrlToFile(dataUrl, filename){
-  if(!dataUrl) return null;
-  const arr = dataUrl.split(",");
-  const mimeMatch = arr[0].match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : "image/png";
-  const bstr = atob(arr[1]);
-  const u8arr = new Uint8Array(bstr.length);
-  for(let i=0; i<bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
-  return new File([u8arr], filename, {type:mime});
-}
-
-function updateLockPill(){
-  let locked = false;
-  try {
-    const base = $("baseSceneJson").value.trim() ? JSON.parse($("baseSceneJson").value) : null;
-    locked = !!base?.locked || !!base?.lock_state?.overall_locked;
-  } catch {}
-  const pill = $("baseLockPill");
-  if(locked){
-    pill.className = "pill ok";
-    pill.textContent = "Base låst";
-  } else {
-    pill.className = "pill warn";
-    pill.textContent = "Base ikke låst";
-  }
-}
-
-function requireOriginalPhoto(){
-  if(!state.originalPhotoFile){
-    throw new Error("Last opp originalfoto først.");
-  }
-}
-
-async function withBusy(btn, fn){
-  const old = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "Jobber...";
-  setMessage("");
-  try {
-    await fn();
-  } catch(e) {
-    console.error(e);
-    setMessage(e.message || String(e), "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = old;
-  }
-}
-
-$("saveSettingsBtn").addEventListener("click", () => {
-  localStorage.setItem("pabygg_backend_url", backendUrl());
-  setMessage("Backend-URL lagret i nettleseren.");
-});
-
-$("healthBtn").addEventListener("click", async () => {
-  await withBusy($("healthBtn"), async () => {
-    const res = await fetch(`${backendUrl()}/health`);
-    const data = await res.json();
-    $("statusPill").className = "pill ok";
-    $("statusPill").textContent = `OK v${data.version || "?"}`;
-    setMessage(JSON.stringify(data, null, 2));
-  });
-});
-
-$("photoInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  state.originalPhotoFile = file || null;
-  if(state.originalPhotoPreviewUrl) URL.revokeObjectURL(state.originalPhotoPreviewUrl);
-  state.originalPhotoPreviewUrl = file ? URL.createObjectURL(file) : null;
-  setImage("originalBox", state.originalPhotoPreviewUrl, "Originalfoto vises her");
-});
-
-$("baseStartBtn").addEventListener("click", async () => {
-  await withBusy($("baseStartBtn"), async () => {
+$("baseStartBtn").addEventListener("click", async()=>{
+  await withBusy($("baseStartBtn"), async()=>{
     requireOriginalPhoto();
-    const fd = new FormData();
+    const fd=new FormData();
     fd.append("photo", state.originalPhotoFile);
     fd.append("wishes", $("baseWishes").value);
     fd.append("scale_note", $("scaleNote").value);
     if($("referenceLength").value) fd.append("reference_length_m", $("referenceLength").value);
     fd.append("generate_image", "true");
-
     const data = await apiPost("/api/base/start", fd);
-    state.baseScene = data.base_scene;
-    state.baseSketchDataUrl = data.base_sketch_image_data_url;
-    writeJson("baseSceneJson", state.baseScene);
-    setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
-    updateLockPill();
+    state.baseScene=data.base_scene; state.baseSketchDataUrl=data.base_sketch_image_data_url;
+    writeJson("baseSceneJson", state.baseScene); setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her"); updateLockPill();
     setMessage("Base-scene og base-skisse er laget.");
   });
 });
 
-$("baseReviseBtn").addEventListener("click", async () => {
-  await withBusy($("baseReviseBtn"), async () => {
-    const current = parseJsonTextarea("baseSceneJson");
-    const fd = new FormData();
+$("baseReviseBtn").addEventListener("click", async()=>{
+  await withBusy($("baseReviseBtn"), async()=>{
+    const current=parseJsonTextarea("baseSceneJson");
+    const fd=new FormData();
     fd.append("current_base_scene_json", JSON.stringify(current));
     fd.append("instruction", $("baseReviseInstruction").value);
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile = dataUrlToFile(state.baseSketchDataUrl, "current-base-sketch.png");
+    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "current-base-sketch.png");
     if(sketchFile) fd.append("current_base_sketch", sketchFile);
     if($("baseMarkupInput").files[0]) fd.append("markup_image", $("baseMarkupInput").files[0]);
-    fd.append("generate_image", "true");
-
+    fd.append("generate_image", "false");
+    fd.append("render_source_choice", $("baseRenderSourceChoice").value);
     const data = await apiPost("/api/base/revise", fd);
-    state.baseScene = data.base_scene;
-    state.baseSketchDataUrl = data.base_sketch_image_data_url;
-    writeJson("baseSceneJson", state.baseScene);
-    setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
-    updateLockPill();
-    setMessage("Base-scene og skisse er oppdatert.");
+    state.baseScene=data.base_scene;
+    writeJson("baseSceneJson", state.baseScene); updateLockPill();
+    setMessage("Base-scene JSON er oppdatert med AI. Trykk 'Render base-skisse fra JSON' for nytt bilde.");
   });
 });
 
-$("lockBaseBtn").addEventListener("click", () => {
-  try {
-    const base = parseJsonTextarea("baseSceneJson");
-    base.locked = true;
-    base.lock_state = base.lock_state || {};
-    base.lock_state.overall_locked = true;
-    base.lock_state.locked_aspects = base.lock_state.locked_aspects || [];
-    for(const item of ["house_overview", "element_list", "base_sketch_instruction"]) {
-      if(!base.lock_state.locked_aspects.includes(item)) base.lock_state.locked_aspects.push(item);
-    }
-    base.iteration = base.iteration || {};
-    base.iteration.change_log = base.iteration.change_log || [];
-    base.iteration.change_log.push({
-      action: "locked_base_scene",
-      note: "Bruker låste base-scene som utgangspunkt for påbygg.",
-      timestamp: new Date().toISOString()
-    });
-    state.baseScene = base;
-    writeJson("baseSceneJson", base);
-    updateLockPill();
-    setMessage("Base er låst. Du kan nå lage separat påbygg.");
-  } catch(e) { setMessage(e.message, "error"); }
+$("baseRenderBtn").addEventListener("click", async()=>{
+  await withBusy($("baseRenderBtn"), async()=>{
+    const base=parseJsonTextarea("baseSceneJson");
+    const fd=new FormData();
+    fd.append("base_scene_json", JSON.stringify(base));
+    if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
+    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "current-base-sketch.png");
+    if(sketchFile) fd.append("current_base_sketch", sketchFile);
+    fd.append("render_source_choice", $("baseRenderSourceChoice").value);
+    const data = await apiPost("/api/base/render", fd);
+    state.baseSketchDataUrl=data.base_sketch_image_data_url;
+    setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
+    setMessage("Base-skisse rendret direkte fra JSON.");
+  });
 });
 
-$("unlockBaseBtn").addEventListener("click", () => {
-  try {
-    const base = parseJsonTextarea("baseSceneJson");
-    base.locked = false;
-    base.lock_state = base.lock_state || {};
-    base.lock_state.overall_locked = false;
-    state.baseScene = base;
-    writeJson("baseSceneJson", base);
-    updateLockPill();
-    setMessage("Base er låst opp.");
-  } catch(e) { setMessage(e.message, "error"); }
-});
+$("lockBaseBtn").addEventListener("click",()=>{ try { const base=parseJsonTextarea("baseSceneJson"); base.locked=true; base.lock_state=base.lock_state||{}; base.lock_state.overall_locked=true; base.lock_state.locked_aspects=base.lock_state.locked_aspects||[]; for(const item of ["house_overview","element_list","base_sketch_instruction"]){ if(!base.lock_state.locked_aspects.includes(item)) base.lock_state.locked_aspects.push(item); } base.iteration=base.iteration||{}; base.iteration.change_log=base.iteration.change_log||[]; base.iteration.change_log.push({action:"locked_base_scene", note:"Bruker låste base-scene som utgangspunkt for påbygg.", timestamp:new Date().toISOString()}); state.baseScene=base; writeJson("baseSceneJson", base); updateLockPill(); setMessage("Base er låst. Du kan nå lage separat påbygg."); } catch(e){ setMessage(e.message,"error"); } });
+$("unlockBaseBtn").addEventListener("click",()=>{ try { const base=parseJsonTextarea("baseSceneJson"); base.locked=false; base.lock_state=base.lock_state||{}; base.lock_state.overall_locked=false; state.baseScene=base; writeJson("baseSceneJson", base); updateLockPill(); setMessage("Base er låst opp."); } catch(e){ setMessage(e.message,"error"); } });
+$("formatBaseJsonBtn").addEventListener("click",()=>{ try { const obj=parseJsonTextarea("baseSceneJson"); writeJson("baseSceneJson", obj); updateLockPill(); setMessage("Base-scene JSON er formatert."); } catch(e){ setMessage(e.message,"error"); } });
 
-$("formatBaseJsonBtn").addEventListener("click", () => {
-  try {
-    const obj = parseJsonTextarea("baseSceneJson");
-    writeJson("baseSceneJson", obj);
-    updateLockPill();
-  } catch(e) { setMessage(e.message, "error"); }
-});
-
-$("extensionStartBtn").addEventListener("click", async () => {
-  await withBusy($("extensionStartBtn"), async () => {
-    const base = parseJsonTextarea("baseSceneJson");
+$("extensionStartBtn").addEventListener("click", async()=>{
+  await withBusy($("extensionStartBtn"), async()=>{
+    const base=parseJsonTextarea("baseSceneJson");
     if(!base.locked && !base?.lock_state?.overall_locked) throw new Error("Lås base før du lager påbygg.");
-
-    const fd = new FormData();
+    const fd=new FormData();
     fd.append("locked_base_scene_json", JSON.stringify(base));
     fd.append("extension_wishes", $("extensionWishes").value);
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile = dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
     if(sketchFile) fd.append("base_sketch", sketchFile);
-    fd.append("generate_image", "true");
-
+    fd.append("generate_image", "false");
+    fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
     const data = await apiPost("/api/extension/start", fd);
-    state.extension = data.extension;
-    state.extensionImageDataUrl = data.image_data_url;
-    writeJson("extensionJson", state.extension);
-    setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsvisualisering vises her");
-    setMessage("Påbygg er laget.");
+    state.extension=data.extension; writeJson("extensionJson", state.extension);
+    setMessage("Første påbygg-JSON er laget. Trykk 'Render påbygg fra JSON' for bilde.");
   });
 });
 
-$("extensionReviseBtn").addEventListener("click", async () => {
-  await withBusy($("extensionReviseBtn"), async () => {
-    const base = parseJsonTextarea("baseSceneJson");
-    const extension = parseJsonTextarea("extensionJson");
-
-    const fd = new FormData();
+$("extensionReviseBtn").addEventListener("click", async()=>{
+  await withBusy($("extensionReviseBtn"), async()=>{
+    const base=parseJsonTextarea("baseSceneJson");
+    const extension=parseJsonTextarea("extensionJson");
+    const fd=new FormData();
     fd.append("locked_base_scene_json", JSON.stringify(base));
     fd.append("current_extension_json", JSON.stringify(extension));
     fd.append("instruction", $("extensionReviseInstruction").value);
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const currentVisFile = dataUrlToFile(state.extensionImageDataUrl, "current-extension.png");
+    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    if(sketchFile) fd.append("base_sketch", sketchFile);
+    const currentVisFile=dataUrlToFile(state.extensionImageDataUrl, "current-extension.png");
     if(currentVisFile) fd.append("current_visualization", currentVisFile);
     if($("extensionMarkupInput").files[0]) fd.append("markup_image", $("extensionMarkupInput").files[0]);
-    fd.append("generate_image", "true");
-
+    fd.append("generate_image", "false");
+    fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
     const data = await apiPost("/api/extension/revise", fd);
-    state.extension = data.extension;
-    state.extensionImageDataUrl = data.image_data_url;
-    writeJson("extensionJson", state.extension);
-    setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsvisualisering vises her");
-    setMessage("Påbygg er oppdatert.");
+    state.extension=data.extension; writeJson("extensionJson", state.extension);
+    setMessage("Påbygg-JSON er oppdatert med AI. Trykk 'Render påbygg fra JSON' for nytt bilde.");
   });
 });
 
-$("formatExtensionJsonBtn").addEventListener("click", () => {
-  try {
-    const obj = parseJsonTextarea("extensionJson");
-    writeJson("extensionJson", obj);
-  } catch(e) { setMessage(e.message, "error"); }
-});
-
-$("briefBtn").addEventListener("click", async () => {
-  await withBusy($("briefBtn"), async () => {
-    const base = parseJsonTextarea("baseSceneJson");
-    const fd = new FormData();
-    fd.append("base_scene_json", JSON.stringify(base));
-    if($("extensionJson").value.trim()){
-      const extension = parseJsonTextarea("extensionJson");
-      fd.append("extension_json", JSON.stringify(extension));
-    }
-    const data = await apiPost("/api/brief", fd);
-    $("briefOutput").value = data.brief_markdown || "";
-    setMessage("Arkitektbrief er laget.");
+$("extensionRenderBtn").addEventListener("click", async()=>{
+  await withBusy($("extensionRenderBtn"), async()=>{
+    const base=parseJsonTextarea("baseSceneJson");
+    const extension=parseJsonTextarea("extensionJson");
+    const fd=new FormData();
+    fd.append("locked_base_scene_json", JSON.stringify(base));
+    fd.append("current_extension_json", JSON.stringify(extension));
+    if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
+    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    if(sketchFile) fd.append("base_sketch", sketchFile);
+    const currentVisFile=dataUrlToFile(state.extensionImageDataUrl, "current-extension.png");
+    if(currentVisFile) fd.append("current_visualization", currentVisFile);
+    fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
+    const data = await apiPost("/api/extension/render", fd);
+    state.extensionImageDataUrl=data.image_data_url;
+    setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsillustrasjon vises her");
+    setMessage("Påbyggsillustrasjon rendret direkte fra JSON.");
   });
 });
 
-$("downloadProjectBtn").addEventListener("click", () => {
-  const project = {
-    file_type: "pabygg_project",
-    version: "0.5",
-    saved_at: new Date().toISOString(),
-    base_scene: $("baseSceneJson").value.trim() ? JSON.parse($("baseSceneJson").value) : null,
-    extension: $("extensionJson").value.trim() ? JSON.parse($("extensionJson").value) : null,
-    images: {
-      base_sketch_data_url: state.baseSketchDataUrl,
-      extension_image_data_url: state.extensionImageDataUrl
-    }
-  };
-  const blob = new Blob([JSON.stringify(project, null, 2)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "pabygg-project.json";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
-
-$("loadProjectBtn").addEventListener("click", () => $("loadProjectInput").click());
-
-$("loadProjectInput").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if(!file) return;
-  try {
-    const text = await file.text();
-    const project = JSON.parse(text);
-    if(project.base_scene){
-      state.baseScene = project.base_scene;
-      writeJson("baseSceneJson", state.baseScene);
-    }
-    if(project.extension){
-      state.extension = project.extension;
-      writeJson("extensionJson", state.extension);
-    }
-    state.baseSketchDataUrl = project.images?.base_sketch_data_url || null;
-    state.extensionImageDataUrl = project.images?.extension_image_data_url || null;
-    setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
-    setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsvisualisering vises her");
-    updateLockPill();
-    setMessage("Prosjektfil lastet inn. Originalfoto må lastes opp på nytt hvis du skal generere nye bilder.");
-  } catch(err) {
-    setMessage(err.message, "error");
-  }
-});
-
-(function init(){
-  const saved = localStorage.getItem("pabygg_backend_url");
-  if(saved) $("backendUrl").value = saved;
-  updateLockPill();
-})();
+$("formatExtensionJsonBtn").addEventListener("click",()=>{ try { const obj=parseJsonTextarea("extensionJson"); writeJson("extensionJson", obj); setMessage("Påbygg JSON er formatert."); } catch(e){ setMessage(e.message,"error"); } });
+$("briefBtn").addEventListener("click", async()=>{ await withBusy($("briefBtn"), async()=>{ const base=parseJsonTextarea("baseSceneJson"); const fd=new FormData(); fd.append("base_scene_json", JSON.stringify(base)); if($("extensionJson").value.trim()){ const extension=parseJsonTextarea("extensionJson"); fd.append("extension_json", JSON.stringify(extension)); } const data=await apiPost("/api/brief", fd); $("briefOutput").value=data.brief_markdown||""; setMessage("Arkitektbrief er laget."); }); });
+$("downloadProjectBtn").addEventListener("click",()=>{ const project={ file_type:"pabygg_project", version:"0.6", saved_at:new Date().toISOString(), base_scene: $("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null, extension: $("extensionJson").value.trim()?JSON.parse($("extensionJson").value):null, images:{ base_sketch_data_url: state.baseSketchDataUrl, extension_image_data_url: state.extensionImageDataUrl } }; const blob=new Blob([JSON.stringify(project,null,2)], {type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="pabygg-project.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); });
+$("loadProjectBtn").addEventListener("click",()=>$("loadProjectInput").click());
+$("loadProjectInput").addEventListener("change", async(e)=>{ const file=e.target.files[0]; if(!file) return; try { const text=await file.text(); const project=JSON.parse(text); if(project.base_scene){ state.baseScene=project.base_scene; writeJson("baseSceneJson", state.baseScene); } if(project.extension){ state.extension=project.extension; writeJson("extensionJson", state.extension); } state.baseSketchDataUrl=project.images?.base_sketch_data_url||null; state.extensionImageDataUrl=project.images?.extension_image_data_url||null; setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her"); setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsillustrasjon vises her"); updateLockPill(); setMessage("Prosjektfil lastet inn. Originalfoto må lastes opp på nytt hvis du skal rendere nye bilder."); } catch(err){ setMessage(err.message, "error"); } });
+(function init(){ const saved=localStorage.getItem("pabygg_backend_url"); if(saved) $("backendUrl").value=saved; updateLockPill(); })();
 </script>
 </body>
 </html>
