@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>P-bygg AI v0.6.1</title>
+  <title>P-bygg AI v0.6.3</title>
   <style>
     :root{
       --bg:#f4f1ec; --panel:#fffaf2; --panel2:#ffffff; --ink:#1f2933; --muted:#667085; --line:#ded6c8;
@@ -35,6 +35,18 @@
     .imagebox img{max-width:100%;max-height:560px;display:block;object-fit:contain}
     .placeholder{color:#756b5e;padding:28px;text-align:center}
     .small{font-size:13px;color:var(--muted)}
+    .image-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+    .image-nav button{padding:8px 10px;border-radius:12px;font-size:13px;box-shadow:none}
+    .image-counter{font-size:13px;color:var(--muted);font-weight:800;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px}
+    .active-note{font-size:12px;color:var(--ok);font-weight:800}
+    .markup-tools{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .markup-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+    .markup-toolbar label{margin:0;font-size:12px;font-weight:700}
+    .markup-toolbar input[type="color"]{width:46px;padding:2px;height:36px}
+    .markup-toolbar input[type="range"]{width:120px}
+    .canvas-wrap{margin-top:10px;border:1px dashed #c8bda9;border-radius:14px;overflow:hidden;background:#f8f4ee}
+    .canvas-wrap canvas{display:block;max-width:100%;width:100%;height:auto;touch-action:none;cursor:crosshair}
+
     .error{background:#fff1f1;color:#8a2323;border:1px solid #efc7c7;padding:12px;border-radius:12px;white-space:pre-wrap}
     .success{background:#effaf3;color:#1c673a;border:1px solid #bbe7c8;padding:12px;border-radius:12px;white-space:pre-wrap}
     .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -46,7 +58,7 @@
 </head>
 <body>
 <header>
-  <h1>P-bygg AI v0.6.1</h1>
+  <h1>P-bygg AI v0.6.3</h1>
   <p class="sub">JSON-first: AI hjelper med å lage eller oppdatere JSON, men når du trykker render brukes JSON-en direkte som sannhet. JSON-formatknappene forsøker nå også å reparere vanlige lim-inn-feil. Du kan også velge hvilket bilde som skal sendes med som visuelt anker.</p>
   <div class="steps">
     <span class="step active">1 Base-scene</span>
@@ -108,9 +120,31 @@
       <h2>2. Base-skisse</h2>
       <p class="small">Lag først base-scene med AI. Deretter kan du redigere JSON-en og rendere ny base-skisse direkte fra JSON.</p>
       <div class="imagebox" id="baseSketchBox"><div class="placeholder">Base-skisse vises her</div></div>
+      <div class="image-nav">
+        <button class="secondary" id="basePrevBtn">← Forrige</button>
+        <span class="image-counter" id="baseImageCounter">0 / 0</span>
+        <button class="secondary" id="baseNextBtn">Neste →</button>
+        <span class="active-note">Vist base-skisse er aktiv ved sending</span>
+      </div>
+      <div class="markup-tools">
+        <p class="small" style="margin:0">Tegn markeringer direkte på den viste base-skissen. Tegningen sendes som markup-bilde når du bruker <strong>Oppdater base-scene med AI</strong>.</p>
+        <div class="markup-toolbar">
+          <button class="secondary" id="baseLoadMarkupBtn">Last aktivt bilde inn i tegnefelt</button>
+          <button class="secondary" id="baseClearMarkupBtn">Tøm markeringer</button>
+          <label for="baseMarkupColor">Farge</label>
+          <input id="baseMarkupColor" type="color" value="#ff3b30" />
+          <label for="baseMarkupSize">Tykkelse</label>
+          <input id="baseMarkupSize" type="range" min="1" max="16" value="4" />
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="baseMarkupCanvas"></canvas>
+        </div>
+        <label for="baseMarkupMeaning">Hvordan skal markeringene tolkes?</label>
+        <textarea id="baseMarkupMeaning" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="Eksempel: Rød pil = flytt dette vinduet mot høyre. Rødt kryss = fjern dette elementet. Sirkel = området som skal bygges ut."></textarea>
+      </div>
       <label for="baseReviseInstruction">Oppdater base-scene med AI</label>
       <textarea id="baseReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. taket er rødt, dette vinduet er større, plattingen skal regnes som eksisterende struktur"></textarea>
-      <label for="baseMarkupInput">Valgfritt markert bilde / kryss</label>
+      <label for="baseMarkupInput">Eller last opp eget markert bilde</label>
       <input id="baseMarkupInput" type="file" accept="image/*" />
       <label for="baseRenderSourceChoice">Kildebilde for base-render</label>
       <select id="baseRenderSourceChoice">
@@ -144,7 +178,7 @@
       <div class="row"><button id="extensionStartBtn">Lag første påbygg-JSON med AI</button></div>
       <label for="extensionReviseInstruction">Oppdater påbygg-JSON med AI</label>
       <textarea id="extensionReviseInstruction" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="f.eks. gjør det bredere, trapp langs vegg, bytt til saltak"></textarea>
-      <label for="extensionMarkupInput">Valgfritt markert bilde / kryss</label>
+      <label for="extensionMarkupInput">Eller last opp eget markert bilde</label>
       <input id="extensionMarkupInput" type="file" accept="image/*" />
       <label for="extensionRenderSourceChoice">Kildebilde for påbygg-render</label>
       <select id="extensionRenderSourceChoice">
@@ -163,6 +197,28 @@
     <div class="card white">
       <h2>Påbyggsillustrasjon</h2>
       <div class="imagebox" id="extensionImageBox"><div class="placeholder">Påbyggsillustrasjon vises her</div></div>
+      <div class="image-nav">
+        <button class="secondary" id="extensionPrevBtn">← Forrige</button>
+        <span class="image-counter" id="extensionImageCounter">0 / 0</span>
+        <button class="secondary" id="extensionNextBtn">Neste →</button>
+        <span class="active-note">Vist påbyggsillustrasjon er aktiv ved sending</span>
+      </div>
+      <div class="markup-tools">
+        <p class="small" style="margin:0">Tegn markeringer direkte på den viste påbyggsillustrasjonen. Tegningen sendes som markup-bilde når du bruker <strong>Oppdater påbygg-JSON med AI</strong>.</p>
+        <div class="markup-toolbar">
+          <button class="secondary" id="extensionLoadMarkupBtn">Last aktivt bilde inn i tegnefelt</button>
+          <button class="secondary" id="extensionClearMarkupBtn">Tøm markeringer</button>
+          <label for="extensionMarkupColor">Farge</label>
+          <input id="extensionMarkupColor" type="color" value="#ff3b30" />
+          <label for="extensionMarkupSize">Tykkelse</label>
+          <input id="extensionMarkupSize" type="range" min="1" max="16" value="4" />
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="extensionMarkupCanvas"></canvas>
+        </div>
+        <label for="extensionMarkupMeaning">Hvordan skal markeringene tolkes?</label>
+        <textarea id="extensionMarkupMeaning" style="min-height:90px;font-family:inherit;font-size:14px;white-space:normal" placeholder="Eksempel: Rød strek viser ny trappretning. Rødt kryss = fjern denne delen. Pil = flytt denne delen mot venstre. Buepil = roter taket."></textarea>
+      </div>
     </div>
     <div class="card">
       <h2>Påbygg JSON</h2>
@@ -183,10 +239,24 @@ const $ = (id) => document.getElementById(id);
 let state = {
   originalPhotoFile: null,
   originalPhotoPreviewUrl: null,
+
+  // Backwards-compatible current images
   baseSketchDataUrl: null,
+  extensionImageDataUrl: null,
+
+  // Image history. The currently displayed index is the active image sent to backend.
+  baseSketchHistory: [],
+  activeBaseSketchIndex: -1,
+  extensionImageHistory: [],
+  activeExtensionImageIndex: -1,
+
+  markup: {
+    base: { backgroundDataUrl: null, backgroundImage: null, strokes: [], isDrawing: false },
+    extension: { backgroundDataUrl: null, backgroundImage: null, strokes: [], isDrawing: false }
+  },
+
   baseScene: null,
-  extension: null,
-  extensionImageDataUrl: null
+  extension: null
 };
 
 function setMessage(text, kind = "success") { $("message").innerHTML = text ? `<div class="${kind}">${escapeHtml(text)}</div>` : ""; }
@@ -457,6 +527,247 @@ function smartFormatJsonTextarea(id, label){
 
 function writeJson(id, obj){ $(id).value = JSON.stringify(obj, null, 2); }
 function setImage(boxId, dataUrl, placeholder){ const box=$(boxId); box.innerHTML = dataUrl ? `<img src="${dataUrl}" alt="">` : `<div class="placeholder">${escapeHtml(placeholder)}</div>`; }
+
+function updateImageCounters(){
+  const baseTotal = state.baseSketchHistory.length;
+  const baseCurrent = state.activeBaseSketchIndex >= 0 ? state.activeBaseSketchIndex + 1 : 0;
+  const extTotal = state.extensionImageHistory.length;
+  const extCurrent = state.activeExtensionImageIndex >= 0 ? state.activeExtensionImageIndex + 1 : 0;
+
+  if($("baseImageCounter")) $("baseImageCounter").textContent = `${baseCurrent} / ${baseTotal}`;
+  if($("extensionImageCounter")) $("extensionImageCounter").textContent = `${extCurrent} / ${extTotal}`;
+
+  if($("basePrevBtn")) $("basePrevBtn").disabled = baseTotal === 0 || state.activeBaseSketchIndex <= 0;
+  if($("baseNextBtn")) $("baseNextBtn").disabled = baseTotal === 0 || state.activeBaseSketchIndex >= baseTotal - 1;
+  if($("extensionPrevBtn")) $("extensionPrevBtn").disabled = extTotal === 0 || state.activeExtensionImageIndex <= 0;
+  if($("extensionNextBtn")) $("extensionNextBtn").disabled = extTotal === 0 || state.activeExtensionImageIndex >= extTotal - 1;
+}
+
+function showBaseSketchAt(index){
+  if(index < 0 || index >= state.baseSketchHistory.length){
+    state.activeBaseSketchIndex = -1;
+    state.baseSketchDataUrl = null;
+    setImage("baseSketchBox", null, "Base-skisse vises her");
+    refreshMarkupForActiveImage("base");
+    updateImageCounters();
+    return;
+  }
+  state.activeBaseSketchIndex = index;
+  state.baseSketchDataUrl = state.baseSketchHistory[index];
+  setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
+  refreshMarkupForActiveImage("base");
+  updateImageCounters();
+}
+
+function addBaseSketchImage(dataUrl){
+  if(!dataUrl) return;
+  state.baseSketchHistory.push(dataUrl);
+  showBaseSketchAt(state.baseSketchHistory.length - 1);
+}
+
+function getActiveBaseSketchDataUrl(){
+  if(state.activeBaseSketchIndex >= 0 && state.activeBaseSketchIndex < state.baseSketchHistory.length){
+    return state.baseSketchHistory[state.activeBaseSketchIndex];
+  }
+  return state.baseSketchDataUrl;
+}
+
+function showExtensionImageAt(index){
+  if(index < 0 || index >= state.extensionImageHistory.length){
+    state.activeExtensionImageIndex = -1;
+    state.extensionImageDataUrl = null;
+    setImage("extensionImageBox", null, "Påbyggsillustrasjon vises her");
+    refreshMarkupForActiveImage("extension");
+    updateImageCounters();
+    return;
+  }
+  state.activeExtensionImageIndex = index;
+  state.extensionImageDataUrl = state.extensionImageHistory[index];
+  setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsillustrasjon vises her");
+  refreshMarkupForActiveImage("extension");
+  updateImageCounters();
+}
+
+function addExtensionImage(dataUrl){
+  if(!dataUrl) return;
+  state.extensionImageHistory.push(dataUrl);
+  showExtensionImageAt(state.extensionImageHistory.length - 1);
+}
+
+function getActiveExtensionImageDataUrl(){
+  if(state.activeExtensionImageIndex >= 0 && state.activeExtensionImageIndex < state.extensionImageHistory.length){
+    return state.extensionImageHistory[state.activeExtensionImageIndex];
+  }
+  return state.extensionImageDataUrl;
+}
+
+function markupIds(kind){
+  return kind === "base"
+    ? {
+        canvas: "baseMarkupCanvas",
+        color: "baseMarkupColor",
+        size: "baseMarkupSize",
+        upload: "baseMarkupInput",
+        meaning: "baseMarkupMeaning"
+      }
+    : {
+        canvas: "extensionMarkupCanvas",
+        color: "extensionMarkupColor",
+        size: "extensionMarkupSize",
+        upload: "extensionMarkupInput",
+        meaning: "extensionMarkupMeaning"
+      };
+}
+
+function getMarkupBackgroundDataUrl(kind){
+  return kind === "base" ? getActiveBaseSketchDataUrl() : getActiveExtensionImageDataUrl();
+}
+
+function getCanvasPoint(canvas, evt){
+  const rect = canvas.getBoundingClientRect();
+  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+  const x = (clientX - rect.left) * (canvas.width / rect.width);
+  const y = (clientY - rect.top) * (canvas.height / rect.height);
+  return { x, y };
+}
+
+function redrawMarkupCanvas(kind){
+  const ids = markupIds(kind);
+  const canvas = $(ids.canvas);
+  const ctx = canvas.getContext("2d");
+  const mk = state.markup[kind];
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if(mk.backgroundImage){
+    ctx.drawImage(mk.backgroundImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.fillStyle = "#f8f4ee";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#756b5e";
+    ctx.font = "16px sans-serif";
+    ctx.fillText("Ingen aktivt bilde å tegne på ennå", 20, 30);
+  }
+
+  for(const stroke of mk.strokes){
+    if(!stroke.points.length) continue;
+    ctx.beginPath();
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.size;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+    for(let i=1;i<stroke.points.length;i++){
+      ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+    }
+    ctx.stroke();
+  }
+}
+
+function loadMarkupBackground(kind, dataUrl){
+  const ids = markupIds(kind);
+  const canvas = $(ids.canvas);
+  const mk = state.markup[kind];
+  mk.strokes = [];
+  mk.backgroundDataUrl = dataUrl || null;
+
+  const setEmpty = () => {
+    mk.backgroundImage = null;
+    canvas.width = 900;
+    canvas.height = 520;
+    redrawMarkupCanvas(kind);
+  };
+
+  if(!dataUrl){
+    setEmpty();
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    mk.backgroundImage = img;
+    const maxW = 1000;
+    const scale = Math.min(1, maxW / img.width);
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    redrawMarkupCanvas(kind);
+  };
+  img.onerror = setEmpty;
+  img.src = dataUrl;
+}
+
+function refreshMarkupForActiveImage(kind){
+  loadMarkupBackground(kind, getMarkupBackgroundDataUrl(kind));
+}
+
+function clearMarkup(kind){
+  state.markup[kind].strokes = [];
+  redrawMarkupCanvas(kind);
+}
+
+function getMarkupFile(kind){
+  const ids = markupIds(kind);
+  const uploadFile = $(ids.upload).files[0];
+  if(uploadFile) return uploadFile;
+
+  const mk = state.markup[kind];
+  if(!mk.backgroundImage || !mk.strokes.length) return null;
+
+  const canvas = $(ids.canvas);
+  return dataUrlToFile(canvas.toDataURL("image/png"), `${kind}-markup.png`);
+}
+
+function buildInstructionWithMarkup(kind, baseInstruction){
+  const ids = markupIds(kind);
+  const meaning = $(ids.meaning).value.trim();
+  const parts = [];
+  if((baseInstruction || "").trim()) parts.push((baseInstruction || "").trim());
+  if(meaning){
+    parts.push("Tolk markeringene på markup-bildet slik:\n" + meaning);
+  }
+  return parts.join("\n\n");
+}
+
+function setupMarkupCanvas(kind){
+  const ids = markupIds(kind);
+  const canvas = $(ids.canvas);
+  const mk = state.markup[kind];
+
+  const start = (evt) => {
+    evt.preventDefault();
+    const color = $(ids.color).value;
+    const size = Number($(ids.size).value || 4);
+    const pt = getCanvasPoint(canvas, evt);
+    mk.isDrawing = true;
+    mk.strokes.push({ color, size, points: [pt] });
+    redrawMarkupCanvas(kind);
+  };
+
+  const move = (evt) => {
+    if(!mk.isDrawing) return;
+    evt.preventDefault();
+    const pt = getCanvasPoint(canvas, evt);
+    const stroke = mk.strokes[mk.strokes.length - 1];
+    if(!stroke) return;
+    stroke.points.push(pt);
+    redrawMarkupCanvas(kind);
+  };
+
+  const end = () => {
+    mk.isDrawing = false;
+  };
+
+  canvas.addEventListener("mousedown", start);
+  canvas.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+  canvas.addEventListener("mouseleave", end);
+
+  canvas.addEventListener("touchstart", start, { passive: false });
+  canvas.addEventListener("touchmove", move, { passive: false });
+  window.addEventListener("touchend", end, { passive: false });
+}
+
 function dataUrlToFile(dataUrl, filename){ if(!dataUrl) return null; const arr=dataUrl.split(","); const mime=(arr[0].match(/:(.*?);/)||[])[1]||"image/png"; const bstr=atob(arr[1]); const u8=new Uint8Array(bstr.length); for(let i=0;i<bstr.length;i++) u8[i]=bstr.charCodeAt(i); return new File([u8], filename, {type:mime}); }
 function updateLockPill(){ let locked=false; try { const base=$("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null; locked=!!base?.locked || !!base?.lock_state?.overall_locked; } catch{} const pill=$("baseLockPill"); if(locked){ pill.className="pill ok"; pill.textContent="Base låst"; } else { pill.className="pill warn"; pill.textContent="Base ikke låst"; } }
 function requireOriginalPhoto(){ if(!state.originalPhotoFile) throw new Error("Last opp originalfoto først."); }
@@ -477,7 +788,7 @@ $("baseStartBtn").addEventListener("click", async()=>{
     fd.append("generate_image", "true");
     const data = await apiPost("/api/base/start", fd);
     state.baseScene=data.base_scene; state.baseSketchDataUrl=data.base_sketch_image_data_url;
-    writeJson("baseSceneJson", state.baseScene); setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her"); updateLockPill();
+    writeJson("baseSceneJson", state.baseScene); addBaseSketchImage(state.baseSketchDataUrl); updateLockPill();
     setMessage("Base-scene og base-skisse er laget.");
   });
 });
@@ -487,11 +798,12 @@ $("baseReviseBtn").addEventListener("click", async()=>{
     const current=parseJsonTextarea("baseSceneJson");
     const fd=new FormData();
     fd.append("current_base_scene_json", JSON.stringify(current));
-    fd.append("instruction", $("baseReviseInstruction").value);
+    fd.append("instruction", buildInstructionWithMarkup("base", $("baseReviseInstruction").value));
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "current-base-sketch.png");
+    const sketchFile=dataUrlToFile(getActiveBaseSketchDataUrl(), "current-base-sketch.png");
     if(sketchFile) fd.append("current_base_sketch", sketchFile);
-    if($("baseMarkupInput").files[0]) fd.append("markup_image", $("baseMarkupInput").files[0]);
+    const baseMarkupFile=getMarkupFile("base");
+    if(baseMarkupFile) fd.append("markup_image", baseMarkupFile);
     fd.append("generate_image", "false");
     fd.append("render_source_choice", $("baseRenderSourceChoice").value);
     const data = await apiPost("/api/base/revise", fd);
@@ -507,12 +819,12 @@ $("baseRenderBtn").addEventListener("click", async()=>{
     const fd=new FormData();
     fd.append("base_scene_json", JSON.stringify(base));
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "current-base-sketch.png");
+    const sketchFile=dataUrlToFile(getActiveBaseSketchDataUrl(), "current-base-sketch.png");
     if(sketchFile) fd.append("current_base_sketch", sketchFile);
     fd.append("render_source_choice", $("baseRenderSourceChoice").value);
     const data = await apiPost("/api/base/render", fd);
     state.baseSketchDataUrl=data.base_sketch_image_data_url;
-    setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her");
+    addBaseSketchImage(state.baseSketchDataUrl);
     setMessage("Base-skisse rendret direkte fra JSON.");
   });
 });
@@ -529,7 +841,7 @@ $("extensionStartBtn").addEventListener("click", async()=>{
     fd.append("locked_base_scene_json", JSON.stringify(base));
     fd.append("extension_wishes", $("extensionWishes").value);
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    const sketchFile=dataUrlToFile(getActiveBaseSketchDataUrl(), "locked-base-sketch.png");
     if(sketchFile) fd.append("base_sketch", sketchFile);
     fd.append("generate_image", "false");
     fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
@@ -546,13 +858,14 @@ $("extensionReviseBtn").addEventListener("click", async()=>{
     const fd=new FormData();
     fd.append("locked_base_scene_json", JSON.stringify(base));
     fd.append("current_extension_json", JSON.stringify(extension));
-    fd.append("instruction", $("extensionReviseInstruction").value);
+    fd.append("instruction", buildInstructionWithMarkup("extension", $("extensionReviseInstruction").value));
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    const sketchFile=dataUrlToFile(getActiveBaseSketchDataUrl(), "locked-base-sketch.png");
     if(sketchFile) fd.append("base_sketch", sketchFile);
-    const currentVisFile=dataUrlToFile(state.extensionImageDataUrl, "current-extension.png");
+    const currentVisFile=dataUrlToFile(getActiveExtensionImageDataUrl(), "current-extension.png");
     if(currentVisFile) fd.append("current_visualization", currentVisFile);
-    if($("extensionMarkupInput").files[0]) fd.append("markup_image", $("extensionMarkupInput").files[0]);
+    const extensionMarkupFile=getMarkupFile("extension");
+    if(extensionMarkupFile) fd.append("markup_image", extensionMarkupFile);
     fd.append("generate_image", "false");
     fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
     const data = await apiPost("/api/extension/revise", fd);
@@ -569,24 +882,55 @@ $("extensionRenderBtn").addEventListener("click", async()=>{
     fd.append("locked_base_scene_json", JSON.stringify(base));
     fd.append("current_extension_json", JSON.stringify(extension));
     if(state.originalPhotoFile) fd.append("original_photo", state.originalPhotoFile);
-    const sketchFile=dataUrlToFile(state.baseSketchDataUrl, "locked-base-sketch.png");
+    const sketchFile=dataUrlToFile(getActiveBaseSketchDataUrl(), "locked-base-sketch.png");
     if(sketchFile) fd.append("base_sketch", sketchFile);
-    const currentVisFile=dataUrlToFile(state.extensionImageDataUrl, "current-extension.png");
+    const currentVisFile=dataUrlToFile(getActiveExtensionImageDataUrl(), "current-extension.png");
     if(currentVisFile) fd.append("current_visualization", currentVisFile);
     fd.append("render_source_choice", $("extensionRenderSourceChoice").value);
     const data = await apiPost("/api/extension/render", fd);
     state.extensionImageDataUrl=data.image_data_url;
-    setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsillustrasjon vises her");
+    addExtensionImage(state.extensionImageDataUrl);
     setMessage("Påbyggsillustrasjon rendret direkte fra JSON.");
   });
 });
 
 $("formatExtensionJsonBtn").addEventListener("click",()=>{ try { smartFormatJsonTextarea("extensionJson", "Påbygg JSON"); } catch(e){ setMessage(e.message,"error"); } });
 $("briefBtn").addEventListener("click", async()=>{ await withBusy($("briefBtn"), async()=>{ const base=parseJsonTextarea("baseSceneJson"); const fd=new FormData(); fd.append("base_scene_json", JSON.stringify(base)); if($("extensionJson").value.trim()){ const extension=parseJsonTextarea("extensionJson"); fd.append("extension_json", JSON.stringify(extension)); } const data=await apiPost("/api/brief", fd); $("briefOutput").value=data.brief_markdown||""; setMessage("Arkitektbrief er laget."); }); });
-$("downloadProjectBtn").addEventListener("click",()=>{ const project={ file_type:"pabygg_project", version:"0.6", saved_at:new Date().toISOString(), base_scene: $("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null, extension: $("extensionJson").value.trim()?JSON.parse($("extensionJson").value):null, images:{ base_sketch_data_url: state.baseSketchDataUrl, extension_image_data_url: state.extensionImageDataUrl } }; const blob=new Blob([JSON.stringify(project,null,2)], {type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="pabygg-project.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); });
+$("downloadProjectBtn").addEventListener("click",()=>{ const project={ file_type:"pabygg_project", version:"0.6", saved_at:new Date().toISOString(), base_scene: $("baseSceneJson").value.trim()?JSON.parse($("baseSceneJson").value):null, extension: $("extensionJson").value.trim()?JSON.parse($("extensionJson").value):null, images:{ base_sketch_data_url: getActiveBaseSketchDataUrl(), extension_image_data_url: getActiveExtensionImageDataUrl(), base_sketch_history: state.baseSketchHistory, active_base_sketch_index: state.activeBaseSketchIndex, extension_image_history: state.extensionImageHistory, active_extension_image_index: state.activeExtensionImageIndex } }; const blob=new Blob([JSON.stringify(project,null,2)], {type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="pabygg-project.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); });
 $("loadProjectBtn").addEventListener("click",()=>$("loadProjectInput").click());
-$("loadProjectInput").addEventListener("change", async(e)=>{ const file=e.target.files[0]; if(!file) return; try { const text=await file.text(); const project=JSON.parse(text); if(project.base_scene){ state.baseScene=project.base_scene; writeJson("baseSceneJson", state.baseScene); } if(project.extension){ state.extension=project.extension; writeJson("extensionJson", state.extension); } state.baseSketchDataUrl=project.images?.base_sketch_data_url||null; state.extensionImageDataUrl=project.images?.extension_image_data_url||null; setImage("baseSketchBox", state.baseSketchDataUrl, "Base-skisse vises her"); setImage("extensionImageBox", state.extensionImageDataUrl, "Påbyggsillustrasjon vises her"); updateLockPill(); setMessage("Prosjektfil lastet inn. Originalfoto må lastes opp på nytt hvis du skal rendere nye bilder."); } catch(err){ setMessage(err.message, "error"); } });
-(function init(){ const saved=localStorage.getItem("pabygg_backend_url"); if(saved) $("backendUrl").value=saved; updateLockPill(); })();
+$("loadProjectInput").addEventListener("change", async(e)=>{ const file=e.target.files[0]; if(!file) return; try { const text=await file.text(); const project=JSON.parse(text); if(project.base_scene){ state.baseScene=project.base_scene; writeJson("baseSceneJson", state.baseScene); } if(project.extension){ state.extension=project.extension; writeJson("extensionJson", state.extension); } state.baseSketchHistory = project.images?.base_sketch_history || (project.images?.base_sketch_data_url ? [project.images.base_sketch_data_url] : []);
+    state.activeBaseSketchIndex = Number.isInteger(project.images?.active_base_sketch_index) ? project.images.active_base_sketch_index : (state.baseSketchHistory.length ? state.baseSketchHistory.length - 1 : -1);
+    state.extensionImageHistory = project.images?.extension_image_history || (project.images?.extension_image_data_url ? [project.images.extension_image_data_url] : []);
+    state.activeExtensionImageIndex = Number.isInteger(project.images?.active_extension_image_index) ? project.images.active_extension_image_index : (state.extensionImageHistory.length ? state.extensionImageHistory.length - 1 : -1);
+    showBaseSketchAt(state.activeBaseSketchIndex);
+    showExtensionImageAt(state.activeExtensionImageIndex);
+    updateLockPill(); setMessage("Prosjektfil lastet inn. Originalfoto må lastes opp på nytt hvis du skal rendere nye bilder."); } catch(err){ setMessage(err.message, "error"); } });
+$("baseLoadMarkupBtn").addEventListener("click", () => {
+  refreshMarkupForActiveImage("base");
+  setMessage("Aktivt base-bilde er lastet inn i tegnefeltet.");
+});
+$("baseClearMarkupBtn").addEventListener("click", () => {
+  clearMarkup("base");
+  setMessage("Base-markeringer er tømt.");
+});
+$("extensionLoadMarkupBtn").addEventListener("click", () => {
+  refreshMarkupForActiveImage("extension");
+  setMessage("Aktiv påbyggsillustrasjon er lastet inn i tegnefeltet.");
+});
+$("extensionClearMarkupBtn").addEventListener("click", () => {
+  clearMarkup("extension");
+  setMessage("Påbygg-markeringer er tømt.");
+});
+
+setupMarkupCanvas("base");
+setupMarkupCanvas("extension");
+
+$("basePrevBtn").addEventListener("click", () => showBaseSketchAt(state.activeBaseSketchIndex - 1));
+$("baseNextBtn").addEventListener("click", () => showBaseSketchAt(state.activeBaseSketchIndex + 1));
+$("extensionPrevBtn").addEventListener("click", () => showExtensionImageAt(state.activeExtensionImageIndex - 1));
+$("extensionNextBtn").addEventListener("click", () => showExtensionImageAt(state.activeExtensionImageIndex + 1));
+
+(function init(){ const saved=localStorage.getItem("pabygg_backend_url"); if(saved) $("backendUrl").value=saved; updateLockPill(); updateImageCounters(); refreshMarkupForActiveImage("base"); refreshMarkupForActiveImage("extension"); })();
 </script>
 </body>
 </html>
